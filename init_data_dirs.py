@@ -1,4 +1,3 @@
-import os
 import subprocess
 from subprocess import PIPE
 
@@ -33,7 +32,6 @@ class Geth:
         for data_dir in DATA_DIRS:
             exec_result = cls.exec("account", "list", datadir=data_dir)
             split_result = exec_result.stdout.split(b'\n')
-            # print(exec_result.stdout.split(b'\n'))
             res[data_dir] = []
             for sr in split_result:
                 if sr == b'':

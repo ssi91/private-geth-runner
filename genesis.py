@@ -42,9 +42,12 @@ def generate_file(_path, signers, alloc):
 
 
 if __name__ == "__main__":
+    for data_dir in idr.DATA_DIRS:
+        idr.Geth.exec("account", "new", datadir=data_dir, password=idr.ACC_PASSWORD).stdout  # TODO: add logger
+
     res = idr.Geth.get_accounts()
     generate_file(
-        "/Users/ssi/geth_infra/",
+        "/Users/ssi/geth_infra/",  # TODO: parametrise
         [
             res[idr.DATA_DIRS[0]][0]['address'],
             # res[idr.DATA_DIRS[1]][0]['address'],
@@ -52,8 +55,11 @@ if __name__ == "__main__":
         ],
         {
             "alloc": {
-                res[idr.DATA_DIRS[0]][0]['address']: {"balance": "3000000000000000000"},
-                res[idr.DATA_DIRS[1]][0]['address']: {"balance": "3000000000000000000"},
+                res[idr.DATA_DIRS[0]][0]['address']: {"balance": "3000000000000000000"},  # TODO: parametrise
+                res[idr.DATA_DIRS[1]][0]['address']: {"balance": "3000000000000000000"},  # TODO: parametrise
             }
         }
     )
+
+    for data_dir in idr.DATA_DIRS:
+        idr.Geth.exec("init genesis.json", datadir=data_dir)
