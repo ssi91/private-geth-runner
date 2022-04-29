@@ -1,0 +1,19 @@
+version: 0
+nodes:
+  - data_dir1
+  - data_dir2
+
+accounts:
+  - 1
+  - 1
+  - 1
+  - 1
+genesis:
+  template: "path_to_template"
+  signers:
+    - - 0
+  alloc:
+    - - account: 0
+        amount: 3000000000000000000
+    - - account: 0
+        amount: 3000000000000000000
