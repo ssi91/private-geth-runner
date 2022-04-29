@@ -68,15 +68,17 @@ _config_middleware = [
     validata_genesis,
 ]
 
-with open("./config.yml", "r") as conf:
-    data = load(conf, Loader)
 
-for middleware in _config_middleware:
-    try:
-        data = middleware(data)
-    except ValidationError as e:
-        raise  # TODO: gracefully fall here and log the error
-    except Exception as e:
-        raise  # TODO: gracefully fall here and log the error
+def get_config(filename):
+    with open(filename, "r") as conf:
+        data = load(conf, Loader)
 
-print(data)
+    for middleware in _config_middleware:
+        try:
+            data = middleware(data)
+        except ValidationError as e:
+            raise  # TODO: gracefully fall here and log the error
+        except Exception as e:
+            raise  # TODO: gracefully fall here and log the error
+
+    return data
