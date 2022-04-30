@@ -1,6 +1,7 @@
 import json
 
 import init_data_dirs as idr
+from config import get_config
 
 _genesis = {
     "config": {
@@ -37,26 +38,44 @@ def get_genesis(signers, alloc):
 
 def generate_file(_path, signers, alloc):
     gen = get_genesis(signers, alloc)
-    with open(f"{_path}/genesis.json", "w") as f:
+    with open(_path, "w") as f:
         json.dump(gen, f)
 
 
+def get_signers_keys(data):
+    keys = []
+    for node, signers in zip(data['nodes'], data['genesis']['signers']):
+        for signer in signers:
+            keys.append((node, signer))
+    return keys
+
+
+def get_alloc(data):
+    alloc = {}
+    for node, alloc_settings in zip(data['nodes'], data['genesis']['alloc']):
+        for alloc_setting in alloc_settings:
+            alloc[(node, alloc_setting['account'])] = alloc_setting['amount']
+    return alloc
+
+
 if __name__ == "__main__":
-    for data_dir in idr.DATA_DIRS:
-        idr.Geth.exec("account", "new", datadir=data_dir, password=idr.ACC_PASSWORD).stdout  # TODO: add logger
+    config = get_config("./config.yml")  # TODO: parametrize
+    for data_dir, num_accounts in zip(config['nodes'], config['accounts']):
+        for _ in range(num_accounts):
+            idr.Geth.exec("account", "new", datadir=data_dir, password=idr.ACC_PASSWORD).stdout  # TODO: add logger
 
     res = idr.Geth.get_accounts()
+
+    keys = get_signers_keys(config)
+    alloc = get_alloc(config)
+
     generate_file(
-        "/Users/ssi/geth_infra/",  # TODO: parametrise
-        [
-            res[idr.DATA_DIRS[0]][0]['address'],
-            # res[idr.DATA_DIRS[1]][0]['address'],
-            # res[idr.DATA_DIRS[2]][0]['address'],
-        ],
+        config['genesis']['template'],
+        [res[data_dir][signer]['address'] for data_dir, signer in keys],
         {
             "alloc": {
-                res[idr.DATA_DIRS[0]][0]['address']: {"balance": "3000000000000000000"},  # TODO: parametrise
-                res[idr.DATA_DIRS[1]][0]['address']: {"balance": "3000000000000000000"},  # TODO: parametrise
+                res[data_dir][account]['address']: {"balance": f"{balance}"} for (data_dir, account), balance in
+                alloc.items()
             }
         }
     )
